@@ -1,2 +1,136 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+ #include <iostream>
+#include <fstream>
+#include <vector>
+#include <map>
+#include <string>
+using namespace std;
+
+class Student {
+public:
+    int roll;
+    string name;
+    int age;
+
+    Student() {}
+    Student(int r, string n, int a) : roll(r), name(n), age(a) {}
+
+    void display() {
+        cout << "Roll: " << roll << ", Name: " << name << ", Age: " << age << endl;
+    }
+};
+
+class StudentManager {
+    map<int, Student> students; // roll -> student
+
+public:
+    void loadFromFile() {
+        ifstream fin("data.txt");
+        if (!fin) return; // file nahi hai toh return
+
+        students.clear();
+        int roll, age;
+        string name;
+        while (fin >> roll >> name >> age) {
+            students[roll] = Student(roll, name, age);
+        }
+        fin.close();
+    }
+
+    void saveToFile() {
+        ofstream fout("data.txt");
+        for (auto &p : students) {
+            fout << p.second.roll << " " << p.second.name << " " << p.second.age << endl;
+        }
+        fout.close();
+    }
+
+    void addStudent() {
+        int roll, age;
+        string name;
+        cout << "Enter Roll: "; cin >> roll;
+        if (students.find(roll) != students.end()) {
+            cout << "Student with this roll already exists!\n";
+            return;
+        }
+        cout << "Enter Name: "; cin >> name;
+        cout << "Enter Age: "; cin >> age;
+        students[roll] = Student(roll, name, age);
+        cout << "Student added successfully.\n";
+    }
+
+    void displayAll() {
+        if (students.empty()) {
+            cout << "No students to show.\n";
+            return;
+        }
+        for (auto &p : students) {
+            p.second.display();
+        }
+    }
+
+    void searchStudent() {
+        int roll;
+        cout << "Enter roll to search: "; cin >> roll;
+        if (students.find(roll) != students.end()) {
+            students[roll].display();
+        } else {
+            cout << "Student not found.\n";
+        }
+    }
+
+    void deleteStudent() {
+        int roll;
+        cout << "Enter roll to delete: "; cin >> roll;
+        if (students.erase(roll)) {
+            cout << "Student deleted successfully.\n";
+        } else {
+            cout << "Student not found.\n";
+        }
+    }
+
+    void updateStudent() {
+        int roll;
+        cout << "Enter roll to update: "; cin >> roll;
+        if (students.find(roll) == students.end()) {
+            cout << "Student not found.\n";
+            return;
+        }
+        cout << "Enter new name: ";
+        string name; cin >> name;
+        cout << "Enter new age: ";
+        int age; cin >> age;
+        students[roll].name = name;
+        students[roll].age = age;
+        cout << "Student updated successfully.\n";
+    }
+};
+
+int main() {
+    StudentManager sm;
+    sm.loadFromFile();
+
+    int choice;
+    do {
+        cout << "\n--- Student Management ---\n";
+        cout << "1. Add Student\n2. Display All\n3. Search Student\n4. Delete Student\n5. Update Student\n6. Save & Exit\n";
+        cout << "Enter choice: "; cin >> choice;
+
+        switch (choice) {
+            case 1: sm.addStudent(); break;
+            case 2: sm.displayAll(); break;
+            case 3: sm.searchStudent(); break;
+            case 4: sm.deleteStudent(); break;
+            case 5: sm.updateStudent(); break;
+            case 6:
+                sm.saveToFile();
+                cout << "Data saved, exiting...\n";
+                break;
+            default:
+                cout << "Invalid choice!\n";
+        }
+    } while (choice != 6);
+
+    return 0;
+}
